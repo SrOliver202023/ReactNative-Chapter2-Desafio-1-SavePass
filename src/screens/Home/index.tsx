@@ -13,6 +13,7 @@ import {
   TotalPassCount,
   LoginList,
 } from './styles';
+import { Alert } from 'react-native';
 
 interface LoginDataProps {
   id: string;
@@ -31,14 +32,29 @@ export function Home() {
   async function loadData() {
     const dataKey = '@savepass:logins';
     // Get asyncStorage data, use setSearchListData and setData
+
+    try {
+      const response = await AsyncStorage.getItem(dataKey);
+      const responseJSON = response ? JSON.parse(response) : [];
+
+      setData(responseJSON);
+      setSearchListData(responseJSON);
+    } catch (error) {
+      console.log(error);
+      Alert.alert(`Não foi possível carregar os dados de suas senhas salvas!`);
+    }
+
   }
 
   function handleFilterLoginData() {
     // Filter results inside data, save with setSearchListData
+    const newSearchListData = data.filter(item => item.service_name === searchText);
+    setSearchListData(newSearchListData);
   }
 
   function handleChangeInputText(text: string) {
     // Update searchText value
+    if (text !== '') setSearchText(text);
   }
 
   useFocusEffect(useCallback(() => {
@@ -57,7 +73,7 @@ export function Home() {
         <SearchBar
           placeholder="Qual senha você procura?"
           onChangeText={handleChangeInputText}
-          value={searchText}
+          // value={searchText}
           returnKeyType="search"
           onSubmitEditing={handleFilterLoginData}
 
@@ -82,10 +98,10 @@ export function Home() {
               service_name={loginData.service_name}
               email={loginData.email}
               password={loginData.password}
-            />
+            />;
           }}
         />
       </Container>
     </>
-  )
+  );
 }
